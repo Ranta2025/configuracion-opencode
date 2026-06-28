@@ -1,0 +1,366 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/deepseek-v4-flash",
+  "small_model": "opencode/north-mini-code-free",
+
+  // ============================================================
+  // AGENTES — cada modelo donde rinde mejor, costo consciente
+  // glm-5.2:            planner, architect (mejor razonamiento, reemplaza a opus)
+  // deepseek-v4-pro:    TODO el backend (security, reviewers, build-resolvers)
+  // kimi-k2.7-code:     frontend/calidad (code-reviewer, tdd, e2e, refactor, docs, reemplaza a sonnet)
+  // deepseek-v4-flash:  primary (build, reemplaza a haiku)
+  // mimo-v2.5:          operadores ligeros (docs-lookup, harness, loop)
+  // ============================================================
+
+  "agent": {
+    // ── PRIMARY ──────────────────────────────────────────────
+    "build": {
+      "description": "Primary coding agent for development work. Routes complex work to sub-agents. [modelo: deepseek-v4-flash]",
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-flash",
+      "tools": { "write": true, "edit": true, "bash": true, "read": true, "changed-files": true }
+    },
+
+    // ── HEAVY REASONING (glm-5.2) ────────────────────────────
+    "planner": {
+      "description": "Expert planning specialist. Use for implementation planning, architectural changes, complex refactoring. [modelo: glm-5.2]",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.2",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "architect": {
+      "description": "Software architecture specialist for system design, scalability, technical decisions. [modelo: glm-5.2]",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.2",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+
+    // ── FRONTEND / CODE QUALITY (kimi-k2.7-code) ─────────────
+    "code-reviewer": {
+      "description": "Expert code review specialist. Reviews code for quality, security, maintainability. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "tdd-guide": {
+      "description": "Test-Driven Development specialist. Write tests first, 80%+ coverage. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "e2e-runner": {
+      "description": "End-to-end testing specialist using Playwright. Generates, maintains, runs E2E tests. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "refactor-cleaner": {
+      "description": "Dead code cleanup and consolidation specialist. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "doc-updater": {
+      "description": "Documentation and codemap specialist. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+
+    // ── BACKEND (deepseek-v4-pro) ────────────────────────────
+    "backend-developer": {
+      "description": "Expert backend engineer for building APIs, database schemas, business logic, authentication, server-side features, and CLI tools. Use for any backend language/framework. Activated when writing backend code, database models, API routes, server infrastructure, or CLI tools. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "security-reviewer": {
+      "description": "Security vulnerability detection and remediation. Use on auth, input handling, API endpoints, sensitive data. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": true, "edit": true }
+    },
+    "go-reviewer": {
+      "description": "Expert Go code reviewer. Idiomatic Go, concurrency, error handling, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "java-reviewer": {
+      "description": "Expert Java/Spring Boot reviewer. Layered architecture, JPA, security, concurrency. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "kotlin-reviewer": {
+      "description": "Kotlin/Android/KMP code reviewer. Idiomatic Kotlin, coroutines, Compose. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "php-reviewer": {
+      "description": "Expert PHP reviewer. PSR-12, PHP type system, Eloquent ORM, security, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "python-reviewer": {
+      "description": "Expert Python reviewer. PEP 8, Pythonic idioms, type hints, security, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "rust-reviewer": {
+      "description": "Expert Rust reviewer. Idiomatic Rust, ownership, lifetimes, concurrency, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "cpp-reviewer": {
+      "description": "Expert C++ reviewer. Memory safety, modern C++ idioms, concurrency, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "database-reviewer": {
+      "description": "PostgreSQL specialist. Query optimization, schema design, security, performance. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "build-error-resolver": {
+      "description": "Build and TypeScript error resolution specialist. Fixes build/type errors with minimal diffs. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "go-build-resolver": {
+      "description": "Go build, vet, and compilation error resolution. Fixes Go build errors with minimal changes. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "java-build-resolver": {
+      "description": "Java/Maven/Gradle build, compilation, and dependency error resolution. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "kotlin-build-resolver": {
+      "description": "Kotlin/Gradle build, compilation, and dependency error resolution. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "rust-build-resolver": {
+      "description": "Rust build, Cargo, and compilation error resolution. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "cpp-build-resolver": {
+      "description": "C++ build, CMake, and compilation error resolution. Fixes linker issues, template errors. [modelo: deepseek-v4-pro]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+
+    // ── FRONTEND (kimi-k2.7-code) ────────────────────────────
+    "frontend-developer": {
+      "description": "Expert frontend engineer for React/Next.js UIs, components, hooks, styling, forms. [modelo: kimi-k2.7-code]",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+
+    // ── LIGHT & GENERAL (deepseek-v4-flash) ──────────────────
+    "general": {
+      "description": "General-purpose agent for multi-step research, exploration, and mixed tasks. [modelo: deepseek-v4-flash]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+    "explore": {
+      "description": "Fast agent specialized for exploring codebases. Use for searches, understanding structure, finding patterns. [modelo: deepseek-v4-flash]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "tools": { "read": true, "bash": true }
+    },
+    "lightweight-tasks": {
+      "description": "Fast executor for simple, well-defined tasks: file edits, regex replacements, small refactors, config changes. NOT for production backend code. [modelo: deepseek-v4-flash]",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "tools": { "read": true, "write": true, "edit": true, "bash": true }
+    },
+
+    // ── LIGHT OPERATORS (mimo-v2.5) ──────────────────────────
+    "docs-lookup": {
+      "description": "Documentation specialist. Fetch current library/API documentation with code examples. [modelo: mimo-v2.5]",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5",
+      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+    },
+    "harness-optimizer": {
+      "description": "Analyze and improve local agent harness configuration for reliability, cost, throughput. [modelo: mimo-v2.5]",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5",
+      "tools": { "read": true, "bash": true, "edit": true }
+    },
+    "loop-operator": {
+      "description": "Operate autonomous agent loops, monitor progress, intervene when loops stall. [modelo: mimo-v2.5]",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5",
+      "tools": { "read": true, "bash": true, "edit": true }
+    }
+  },
+
+  // ============================================================
+  // COMANDOS SLASH
+  // ============================================================
+
+  "command": {
+    // ── Planning ─────────────────────────────────────────────
+    "plan": {
+      "description": "Create a detailed implementation plan for complex features.",
+      "template": "Create a detailed implementation plan. Break down into tasks with dependencies, estimate complexity, identify risks. $ARGUMENTS",
+      "agent": "planner",
+      "subtask": true
+    },
+    "orchestrate": {
+      "description": "Orchestrate multiple agents for complex multi-step tasks.",
+      "template": "Orchestrate this complex task across specialized agents. Decompose into parallel/subtask units. $ARGUMENTS",
+      "agent": "planner",
+      "subtask": true
+    },
+
+    // ── Code Review ──────────────────────────────────────────
+    "code-review": {
+      "description": "Review code for quality, security, maintainability.",
+      "template": "Review the following code changes for quality, security, performance, and maintainability. Flag issues and suggest improvements. $ARGUMENTS",
+      "agent": "code-reviewer",
+      "subtask": true
+    },
+
+    // ── Security ─────────────────────────────────────────────
+    "security": {
+      "description": "Run comprehensive security review.",
+      "template": "Comprehensive security review: check for injection, XSS, CSRF, auth bypass, secrets exposure, unsafe dependencies. $ARGUMENTS",
+      "agent": "security-reviewer",
+      "subtask": true
+    },
+
+    // ── TDD ──────────────────────────────────────────────────
+    "tdd": {
+      "description": "Enforce TDD workflow with 80%+ test coverage.",
+      "template": "Enforce TDD: write failing tests first, implement minimal code to pass, refactor. Target 80%+ coverage. $ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+
+    // ── Build Fix ────────────────────────────────────────────
+    "build-fix": {
+      "description": "Fix build and type errors with minimal changes.",
+      "template": "Fix build/type errors with minimal, targeted diffs. Do NOT refactor or change behavior. $ARGUMENTS",
+      "agent": "build-error-resolver",
+      "subtask": true
+    },
+
+    // ── E2E ──────────────────────────────────────────────────
+    "e2e": {
+      "description": "Generate and run E2E tests with Playwright.",
+      "template": "Generate and run E2E tests for critical user flows. Use Playwright. $ARGUMENTS",
+      "agent": "e2e-runner",
+      "subtask": true
+    },
+
+    // ── Refactor ─────────────────────────────────────────────
+    "refactor-clean": {
+      "description": "Remove dead code and consolidate duplicates.",
+      "template": "Identify and remove dead code, unused imports, duplicate logic. Do NOT change behavior. $ARGUMENTS",
+      "agent": "refactor-cleaner",
+      "subtask": true
+    },
+
+    // ── Docs ─────────────────────────────────────────────────
+    "update-docs": {
+      "description": "Update documentation.",
+      "template": "Update documentation to reflect recent code changes. $ARGUMENTS",
+      "agent": "doc-updater",
+      "subtask": true
+    },
+    "update-codemaps": {
+      "description": "Update codemaps.",
+      "template": "Update codemap files to reflect current project structure. $ARGUMENTS",
+      "agent": "doc-updater",
+      "subtask": true
+    },
+    "test-coverage": {
+      "description": "Analyze test coverage.",
+      "template": "Analyze test coverage and identify uncovered code paths. $ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+
+    // ── Language-specific ────────────────────────────────────
+    "go-review": {
+      "description": "Review Go code.",
+      "template": "Review Go code for idiomatic patterns, concurrency safety, error handling. $ARGUMENTS",
+      "agent": "go-reviewer",
+      "subtask": true
+    },
+    "go-build": {
+      "description": "Fix Go build errors.",
+      "template": "Fix Go build/vet errors with minimal changes. $ARGUMENTS",
+      "agent": "go-build-resolver",
+      "subtask": true
+    },
+    "rust-review": {
+      "description": "Review Rust code.",
+      "template": "Review Rust code for idiomatic patterns, ownership, lifetimes, concurrency. $ARGUMENTS",
+      "agent": "rust-reviewer",
+      "subtask": true
+    },
+    "rust-build": {
+      "description": "Fix Rust build errors.",
+      "template": "Fix Rust build/Cargo errors with minimal changes. $ARGUMENTS",
+      "agent": "rust-build-resolver",
+      "subtask": true
+    },
+
+    // ── Meta ─────────────────────────────────────────────────
+    "learn": {
+      "description": "Extract patterns and learnings from session.",
+      "template": "Analyze this session and extract reusable patterns, lessons, and insights. $ARGUMENTS"
+    },
+    "checkpoint": {
+      "description": "Save verification state and progress.",
+      "template": "Save current progress checkpoint. Record what's done, what remains, and any blockers. $ARGUMENTS"
+    },
+    "verify": {
+      "description": "Run verification loop.",
+      "template": "Run the verification loop: build, lint, test, type-check in sequence. Report pass/fail. $ARGUMENTS"
+    },
+    "eval": {
+      "description": "Run evaluation against criteria.",
+      "template": "Evaluate the work against acceptance criteria. Score each criterion and report gaps. $ARGUMENTS"
+    },
+
+    // ── Quality Gate ─────────────────────────────────────────
+    "quality-gate": {
+      "description": "Run quality gate checks before merge.",
+      "template": "Run quality gate: lint, typecheck, test coverage, security scan. Block if any fail. $ARGUMENTS"
+    },
+    "model-route": {
+      "description": "Suggest best model for a given task.",
+      "template": "Analyze this task and recommend the most cost-effective model from: deepseek-v4-pro, deepseek-v4-flash, kimi-k2.7-code, mimo-v2.5, glm-5.2. Consider complexity, risk, and budget. $ARGUMENTS"
+    }
+  },
+
+  // ============================================================
+  // PERMISSIONS
+  // ============================================================
+
+  "permission": {
+    "mcp_*": "ask"
+  }
+}
